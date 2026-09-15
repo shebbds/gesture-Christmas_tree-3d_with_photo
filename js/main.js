@@ -58,6 +58,12 @@ function animate() {
 
     updateDemo(dt, pickRandomPhoto);
     updateRotation(dt);
+
+    // 必须在 updateParticles 之前刷新：FOCUS 模式要把世界坐标换算回 mainGroup
+    // 的局部坐标，而 matrixWorld 默认要等到 render() 才更新 —— 那样用的就是上一帧
+    // 的朝向，被选中的照片在树旋转时会跟着飘而不是钉在镜头前。
+    mainGroup.updateMatrixWorld(true);
+
     updateParticles(dt, STATE.mode, STATE.focusTarget);
     updateSnow(dt);
     updateStar();

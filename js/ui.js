@@ -78,6 +78,9 @@ async function onSave(e) {
 function onKeyDown(e) {
     // 在输入框里打字时不触发快捷键
     if (e.target instanceof HTMLInputElement) return;
+    // 放过一切组合键：Cmd/Ctrl+S 是「保存网页」，不该把树炸开；
+    // Cmd+H 是 macOS 的隐藏窗口，Ctrl+D 是加书签，都不该被我们截胡。
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
     // 演示模式接管了形态切换，按键掺和进来只会打架
     if (isDemoMode()) return;
 

@@ -187,9 +187,27 @@ input[type='file'] {
 
 /* ============ 快捷键状态 ============ */
 /* H：隐藏所有 UI，用于截图 / 录屏 */
+/*
+ * 只写 opacity:0 是不够的：.controls-wrapper 自己声明了 pointer-events:auto，
+ * 会盖过从祖先继承来的 none，于是「隐藏」后的按钮依然会吃掉点击 ——
+ * 想拖拽旋转却打开了文件选择框。visibility:hidden 既能真正取消命中测试，
+ * 也能让按钮退出 Tab 顺序；延迟 0.5s 生效是为了不打断淡出动画。
+ */
 .ui-hidden-all #ui-layer,
 .ui-hidden-all #webcam-wrapper {
     opacity: 0;
+    pointer-events: none;
+    visibility: hidden;
+    transition: opacity 0.5s ease, visibility 0s linear 0.5s;
+}
+
+/*
+ * 这条必须单独写，且不能依赖上面那个带延迟的 visibility：
+ * 一是 .controls-wrapper 自己的 pointer-events:auto 会盖过祖先的 none，
+ * 二是 visibility 挂在 transition 上，延迟期间（以及标签页被浏览器冻结时）
+ * 按钮依然可点。pointer-events 不参与过渡，写在这里是立即生效的。
+ */
+.ui-hidden-all .controls-wrapper {
     pointer-events: none;
 }
 

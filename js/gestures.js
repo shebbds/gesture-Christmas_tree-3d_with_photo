@@ -20,9 +20,13 @@ const MODE_LABEL = {
     FOCUS: '捏合 · 看照片',
 };
 
+// 连续出错多少帧才提示用户（偶发单帧失败不值得打扰）
+const ERROR_LIMIT = 30;
+
 let handLandmarker = null;
 let video = null;
 let lastVideoTime = -1;
+let consecutiveErrors = 0;
 
 /** @returns {Promise<boolean>} 手势是否成功启用 */
 export async function initGestures() {
@@ -68,11 +72,25 @@ function disableWebcamUI(message) {
 }
 
 function predictWebcam() {
-    if (handLandmarker && video.currentTime !== lastVideoTime) {
-        lastVideoTime = video.currentTime;
-        processGestures(handLandmarker.detectForVideo(video, performance.now()));
-    }
+    // rAF 必须排在最前：一旦 detectForVideo 抛错（video 尚未就绪、GPU 上下文
+    // 丢失、ROI 异常），循环就再也排不上队，手势会在余下的整个会话里静默失效。
     requestAnimationFrame(predictWebcam);
+
+    if (!handLandmarker || video.currentTime === lastVideoTime) return;
+    lastVideoTime = video.currentTime;
+
+    try {
+        processGestures(handLandmarker.detectForVideo(video, performance.now()));
+    } catch (err) {
+        // 偶发一帧失败无所谓，下一帧再来；连续失败才值得提醒
+        if (++consecutiveErrors === ERROR_LIMIT) {
+            console.warn(`[tree] 手势识别连续 ${ERROR_LIMIT} 帧出错，已降级为鼠标操作`, err);
+            setStatus('手势识别异常 · 鼠标仍可操作');
+        }
+        return;
+    }
+
+    consecutiveErrors = 0;
 }
 
 /**
@@ -87,17 +105,26 @@ function processGestures(result) {
         return;
     }
 
-    STATE.hand.detected = true;
     const lm = result.landmarks[0];
     const wrist = lm[0];
     const middleMCP = lm[9];   // 中指指根
 
-    STATE.hand.x = (middleMCP.x - 0.5) * 2;
-    STATE.hand.y = (middleMCP.y - 0.5) * 2;
-
-    // 以「手腕→中指指根」为基准长度，抵消远近带来的尺度差异
+    // 以「手腕→中指指根」为基准长度，抵消远近带来的尺度差异。
+    // 这道门槛必须在写 STATE.hand 之前：手太小说明人离得很远或识别不稳，
+    // 此时的坐标抖得厉害，一旦写进去就会直接甩动 SCATTER 模式下的视角。
     const handSize = Math.hypot(middleMCP.x - wrist.x, middleMCP.y - wrist.y);
-    if (handSize < CONFIG.gestures.minHandSize) return;
+    if (handSize < CONFIG.gestures.minHandSize) {
+        STATE.hand.detected = false;
+        return;
+    }
+
+    STATE.hand.detected = true;
+
+    // 取负号做镜像：预览画面用 CSS scaleX(-1) 翻转过（照镜子的直觉），
+    // 而 MediaPipe 给的是未翻转的原始坐标。不翻的话，用户看着预览里手往右移，
+    // 树却往反方向转 —— 画面和操作对不上。
+    STATE.hand.x = -(middleMCP.x - 0.5) * 2;
+    STATE.hand.y = (middleMCP.y - 0.5) * 2;
 
     const tips = [lm[8], lm[12], lm[16], lm[20]];
     const avgTipDist =

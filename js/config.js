@@ -86,7 +86,11 @@ export const STATE = {
  */
 export function applyQuality() {
     const forced = new URLSearchParams(location.search).get('quality');
-    const tier = forced && CONFIG.quality[forced] ? forced : detectTier();
+    // 必须用 hasOwnProperty：CONFIG.quality 是普通对象字面量，?quality=toString
+    // 之类会顺着原型链取到函数，通过真值判断后解构出一堆 undefined，
+    // 最终 setPixelRatio(NaN) 把画布尺寸变成 0，用户看到的是一片空白。
+    const valid = forced !== null && Object.prototype.hasOwnProperty.call(CONFIG.quality, forced);
+    const tier = valid ? forced : detectTier();
 
     const { count, dustCount, snowCount, pixelRatio } = CONFIG.quality[tier];
     Object.assign(CONFIG.particles, { count, dustCount, snowCount });

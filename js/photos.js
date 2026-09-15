@@ -161,6 +161,12 @@ export function updatePhotoLayout() {
 
 export function handleImageUpload(event) {
     const files = Array.from(event.target.files || []).filter((f) => f.type.startsWith('image/'));
+
+    // 必须在任何早退之前清空：否则用户选了一个筛完为空的文件夹（比如里面都是
+    // 浏览器报不出 MIME 的 .heic），再选同一个文件夹时 change 事件根本不会触发，
+    // 按钮看起来就像坏了。
+    event.target.value = '';
+
     if (!files.length) return;
 
     const room = CONFIG.photos.maxCount - photoCount();
@@ -190,7 +196,4 @@ export function handleImageUpload(event) {
             }
         );
     });
-
-    // 清空 input，这样连续选同一个文件夹也能再次触发 change
-    event.target.value = '';
 }

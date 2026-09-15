@@ -30,21 +30,33 @@ export async function saveImage() {
     if (!blob) return false;
 
     const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
     const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
-    link.download = `christmas-tree-${stamp}.png`;
-    link.href = url;
+    const filename = `christmas-tree-${stamp}.png`;
 
-    if ('download' in link) {
-        link.click();
-    } else {
-        // iOS Safari 不支持 download 属性，退而求其次在新标签里打开让用户长按保存
-        window.open(url, '_blank');
-    }
+    // 不能用 `'download' in link` 做特性检测 —— 这个属性在所有浏览器上都存在，
+    // 包括那些会直接忽略它的 iOS Safari，所以分支永远走不到 else。
+    // 只能认平台：iOS 上直接开新标签，让用户长按保存。
+    const opened = isIOS() ? window.open(url, '_blank') : clickDownload(url, filename);
 
     // 给浏览器一点时间读完 blob 再释放
     setTimeout(() => URL.revokeObjectURL(url), 10000);
+
+    // 弹窗被拦截时如实返回 false，不然界面会显示「已保存」但其实什么也没发生
+    return Boolean(opened);
+}
+
+function clickDownload(url, filename) {
+    const link = document.createElement('a');
+    link.download = filename;
+    link.href = url;
+    link.click();
     return true;
+}
+
+function isIOS() {
+    // iPadOS 13 起 userAgent 伪装成 Mac，得靠触摸点数量再确认一次
+    const ua = navigator.userAgent;
+    return /iPad|iPhone|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
 }
 
 function drawTitle(ctx, width, height) {
