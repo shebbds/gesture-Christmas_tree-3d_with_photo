@@ -5,6 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Grand Luxury Tree · 手势控制 3D 圣诞树</title>
     <meta name="description" content="用手势和照片点亮的 3D 粒子圣诞树，基于 Three.js 与 MediaPipe。">
+    <meta name="theme-color" content="#050d1a">
+
+    <!-- 分享到社交平台时的预览卡片 -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Grand Luxury Tree · 手势控制 3D 圣诞树">
+    <meta property="og:description" content="挥挥手就能让这棵粒子圣诞树炸裂成星云，还能把你的照片挂上去。Three.js + MediaPipe，纯前端。">
+    <meta property="og:url" content="https://timo8848.github.io/gesture-Christmas_tree-3d_with_photo/">
+    <meta property="og:image" content="https://timo8848.github.io/gesture-Christmas_tree-3d_with_photo/assets/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -45,10 +56,42 @@
                     <input type="file" id="file-input" multiple accept="image/*">
                 </label>
             </div>
+            <div class="btn-group">
+                <button class="upload-btn" id="save-btn" type="button">Save Image</button>
+                <button class="upload-btn" id="help-btn" type="button">Controls</button>
+            </div>
             <p class="hint-text">
                 拖拽旋转 · 滚轮缩放<br>
                 H 隐藏界面 · T 聚成树 · S 散开 · D 调试
             </p>
+        </div>
+    </div>
+
+    <!-- 首次进入的引导：不讲清楚要做什么手势，用户开了摄像头也只会发愣 -->
+    <div id="onboarding" hidden>
+        <div class="onboarding-card">
+            <h2>用手势控制这棵树</h2>
+            <ul class="gesture-list">
+                <li>
+                    <span class="gesture-emoji">✊</span>
+                    <strong>握拳</strong>
+                    <span>粒子聚合成圣诞树</span>
+                </li>
+                <li>
+                    <span class="gesture-emoji">🖐️</span>
+                    <strong>张开手掌</strong>
+                    <span>炸裂成星云，左右移动手掌转动视角</span>
+                </li>
+                <li>
+                    <span class="gesture-emoji">🤏</span>
+                    <strong>捏合手指</strong>
+                    <span>随机抓一张照片放大到眼前</span>
+                </li>
+            </ul>
+            <p class="onboarding-note">
+                没有摄像头也能玩：拖拽旋转、滚轮缩放，<kbd>T</kbd> / <kbd>S</kbd> 切换形态。
+            </p>
+            <button class="upload-btn onboarding-start" id="onboarding-close" type="button">开始</button>
         </div>
     </div>
 

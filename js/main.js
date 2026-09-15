@@ -1,16 +1,27 @@
 /**
  * 入口：按顺序搭好场景，先跑起渲染循环，再去后台加载手势模型。
  */
-import { STATE } from './config.js';
+import { CONFIG, STATE, applyQuality } from './config.js';
 import { initScene, composer, controls, mainGroup, clock } from './scene.js';
-import { createTree, createDust } from './tree.js';
+import { createTree, createDust, updateStar } from './tree.js';
 import { createSnow, updateSnow } from './snow.js';
 import { initPhotos, loadInitialPhotos } from './photos.js';
 import { updateParticles } from './particle.js';
 import { initGestures } from './gestures.js';
 import { initUI, hideLoader, setStatus } from './ui.js';
+import { initDemo, isDemoMode, updateDemo } from './demo.js';
+import { particleSystem } from './particle.js';
 
 function boot() {
+    const tier = applyQuality();
+    console.info(
+        `[tree] 画质档位：${tier}（装饰物 ${CONFIG.particles.count} / 金尘 ${CONFIG.particles.dustCount} / 雪花 ${CONFIG.particles.snowCount}）` +
+        ' · 可用 ?quality=high|medium|low 强制指定'
+    );
+
+    // 要在 initUI 之前确定，否则首次引导会盖在演示画面上
+    initDemo(pickRandomPhoto);
+
     initScene();
     createTree();
     createDust();
@@ -25,6 +36,8 @@ function boot() {
 
     loadInitialPhotos();
 
+    if (isDemoMode()) return;
+
     setStatus('正在加载手势模型…');
     initGestures().then((ok) => {
         if (ok) return;
@@ -32,14 +45,22 @@ function boot() {
     });
 }
 
+/** 随机挑一张照片作为 FOCUS 目标。 */
+function pickRandomPhoto() {
+    const photos = particleSystem.filter((p) => p.type === 'PHOTO');
+    return photos.length ? photos[Math.floor(Math.random() * photos.length)].mesh : null;
+}
+
 function animate() {
     requestAnimationFrame(animate);
 
     const dt = Math.min(clock.getDelta(), 0.1); // 切回标签页时 dt 会很大，钳一下防止粒子瞬移
 
+    updateDemo(dt, pickRandomPhoto);
     updateRotation(dt);
     updateParticles(dt, STATE.mode, STATE.focusTarget);
     updateSnow(dt);
+    updateStar();
 
     controls.update();
     composer.render();

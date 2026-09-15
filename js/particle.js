@@ -21,11 +21,28 @@ const FOCUS_WORLD_POS = new THREE.Vector3(0, 2, 35);
 
 export const particleSystem = [];
 
+/** 所有 InstancedMesh，每帧统一置一次 needsUpdate。 */
+export const instancedMeshes = [];
+
+export function registerInstancedMesh(mesh) {
+    instancedMeshes.push(mesh);
+    return mesh;
+}
+
 export class Particle {
-    constructor(mesh, type, isDust = false) {
+    /**
+     * @param {THREE.Object3D} mesh
+     *   照片是真正在场景图里的 Group；装饰物和金尘则是**游离的 Object3D**
+     *   —— 它不进场景图，只当一个持久的变换容器（位置 / 旋转 / 缩放），
+     *   每帧把合成好的矩阵写进对应 InstancedMesh 的第 index 个实例。
+     *   这样 3500 个粒子从 3500 次 draw call 压缩到 6 次。
+     * @param {{mesh: THREE.InstancedMesh, index: number} | null} instanced
+     */
+    constructor(mesh, type, isDust = false, instanced = null) {
         this.mesh = mesh;
         this.type = type;
         this.isDust = isDust;
+        this.instanced = instanced;
 
         this.posTree = new THREE.Vector3();
         this.posScatter = new THREE.Vector3();
@@ -108,6 +125,11 @@ export class Particle {
         if (isFocused) this.mesh.lookAt(camera.position);
 
         this.mesh.scale.lerp(_tmpScale.setScalar(this.targetScale(mode, isFocused)), damp(4, dt));
+
+        if (this.instanced) {
+            this.mesh.updateMatrix();
+            this.instanced.mesh.setMatrixAt(this.instanced.index, this.mesh.matrix);
+        }
     }
 
     targetScale(mode, isFocused) {
@@ -122,7 +144,8 @@ export class Particle {
     }
 }
 
-/** 每帧更新全部粒子。 */
+/** 每帧更新全部粒子，最后统一提交实例矩阵。 */
 export function updateParticles(dt, mode, focusTarget) {
     for (const p of particleSystem) p.update(dt, mode, focusTarget);
+    for (const m of instancedMeshes) m.instanceMatrix.needsUpdate = true;
 }

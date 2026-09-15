@@ -1,0 +1,39 @@
+# 纯静态站点，没有构建步骤 —— 直接把仓库内容发布到 GitHub Pages。
+#
+# 启用方法：仓库 Settings → Pages → Build and deployment → Source 选 "GitHub Actions"。
+# 之后每次推到 main 都会自动部署到
+# https://timo8848.github.io/gesture-Christmas_tree-3d_with_photo/
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 同一时间只跑一个部署，但不打断进行中的那个
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
+
+      - id: deployment
+        uses: actions/deploy-pages@v4

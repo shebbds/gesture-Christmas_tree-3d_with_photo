@@ -12,12 +12,25 @@ export const CONFIG = {
         accentRed: 0x990000,
     },
 
+    /**
+     * 粒子数量按设备能力分档。
+     * 全部装饰物 + 金尘都走 InstancedMesh，所以数量再大也只有个位数 draw call，
+     * 真正的瓶颈是每帧要在 JS 里合成多少个矩阵 —— 手机上降档就是降这个。
+     */
+    quality: {
+        high:   { count: 1500, dustCount: 2000, snowCount: 1000, pixelRatio: 2 },
+        medium: { count: 1000, dustCount: 1200, snowCount: 600,  pixelRatio: 1.5 },
+        low:    { count: 700,  dustCount: 700,  snowCount: 400,  pixelRatio: 1 },
+    },
+
     particles: {
-        count: 1500,             // 树身装饰物
-        dustCount: 2000,         // 悬浮金尘
-        snowCount: 1000,         // 雪花
+        // count / dustCount / snowCount 由 applyQuality() 在启动时按设备填入
         treeHeight: 24,
         treeRadius: 8,
+    },
+
+    render: {
+        // pixelRatio 同样由 applyQuality() 填入
     },
 
     camera: {
@@ -63,3 +76,33 @@ export const STATE = {
     rotation: { x: 0, y: 0 },
     userControllingCamera: false,  // 鼠标拖拽期间暂停自转
 };
+
+/**
+ * 按设备能力挑一档画质，并把结果写回 CONFIG.particles。
+ *
+ * 判断依据有意保守：手机上跑满 1500 个装饰物 + 2000 粒金尘 + Bloom 会直接掉到
+ * 十几帧，宁可少一点也要保证顺滑 —— 卡顿比粒子少更劝退。
+ * 想强制某一档可以加 URL 参数：?quality=high|medium|low
+ */
+export function applyQuality() {
+    const forced = new URLSearchParams(location.search).get('quality');
+    const tier = forced && CONFIG.quality[forced] ? forced : detectTier();
+
+    const { count, dustCount, snowCount, pixelRatio } = CONFIG.quality[tier];
+    Object.assign(CONFIG.particles, { count, dustCount, snowCount });
+    Object.assign(CONFIG.render, { pixelRatio });
+    CONFIG.activeQuality = tier;
+
+    return tier;
+}
+
+function detectTier() {
+    // 粗略指针 = 触摸屏，基本等同于手机 / 平板
+    const isTouch = window.matchMedia?.('(pointer: coarse)').matches;
+    const cores = navigator.hardwareConcurrency || 4;
+    const narrow = Math.min(window.innerWidth, window.innerHeight) < 500;
+
+    if (isTouch && (narrow || cores <= 4)) return 'low';
+    if (isTouch || cores <= 4) return 'medium';
+    return 'high';
+}

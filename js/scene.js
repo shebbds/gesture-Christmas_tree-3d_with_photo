@@ -35,7 +35,7 @@ export function initScene() {
 
     renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, CONFIG.render.pixelRatio));
     renderer.toneMapping = THREE.ReinhardToneMapping;
     renderer.toneMappingExposure = 2.2;
     container.appendChild(renderer.domElement);
@@ -101,6 +101,9 @@ function setupControls() {
 }
 
 function setupPostProcessing() {
+    // Bloom 在所有档位都保留：这套「香槟金辉光」是项目的整个视觉基调，
+    // 关掉之后画面会立刻发灰发平。它的开销主要跟分辨率走，
+    // 所以低配档是靠降 pixelRatio 和粒子数来省，而不是砍掉辉光。
     const bloomPass = new UnrealBloomPass(
         new THREE.Vector2(window.innerWidth, window.innerHeight),
         1.5, 0.4, 0.85
