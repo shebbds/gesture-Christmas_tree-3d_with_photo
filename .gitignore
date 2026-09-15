@@ -1,0 +1,17 @@
+# Python venv (leftover, not used by this project)
+venv/
+__pycache__/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Node
+node_modules/
+
+# Personal photos — keep the folder, ignore its contents
+images/*
+!images/.gitkeep
+!images/manifest.example.json

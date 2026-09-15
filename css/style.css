@@ -1,0 +1,235 @@
+/* ============ 基础 ============ */
+body {
+    margin: 0;
+    overflow: hidden;
+    background: radial-gradient(circle at center, #0f2027 0%, #203a43 50%, #2c5364 100%);
+    background-color: #050d1a;
+    font-family: 'Times New Roman', serif;
+}
+
+#canvas-container {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+}
+
+/* ============ 加载遮罩 ============ */
+#loader {
+    position: absolute;
+    inset: 0;
+    background: #050d1a;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.8s ease-out;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 1px solid rgba(212, 175, 55, 0.2);
+    border-top: 1px solid #d4af37;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.loader-text {
+    color: #d4af37;
+    font-size: 14px;
+    letter-spacing: 4px;
+    margin-top: 20px;
+    text-transform: uppercase;
+    font-weight: 100;
+}
+
+/* 尊重「减少动态效果」的系统偏好 */
+@media (prefers-reduced-motion: reduce) {
+    .spinner { animation: none; }
+}
+
+/* ============ UI 层 ============ */
+#ui-layer {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 40px;
+    box-sizing: border-box;
+    transition: opacity 0.5s ease;
+}
+
+h1 {
+    color: #fceea7;
+    font-size: clamp(28px, 6vw, 56px);
+    margin: 0;
+    font-weight: 400;
+    letter-spacing: 6px;
+    text-shadow: 0 0 50px rgba(252, 238, 167, 0.6);
+    background: linear-gradient(to bottom, #fff, #eebb66);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-family: 'Cinzel', 'Times New Roman', serif;
+    opacity: 0.9;
+    text-align: center;
+}
+
+/* ============ 控制按钮 ============ */
+.controls-wrapper {
+    position: absolute;
+    top: 30px;
+    right: 30px;
+    pointer-events: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+    z-index: 20;
+    transition: opacity 0.5s ease;
+}
+
+.btn-group {
+    display: flex;
+    gap: 10px;
+}
+
+.upload-btn {
+    background: rgba(20, 20, 20, 0.6);
+    border: 1px solid rgba(212, 175, 55, 0.4);
+    color: #d4af37;
+    padding: 10px 20px;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-size: 10px;
+    transition: all 0.4s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(5px);
+    min-width: 120px;
+}
+
+.upload-btn:hover,
+.upload-btn:focus-within {
+    background: #d4af37;
+    color: #000;
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
+}
+
+.hint-text {
+    color: rgba(212, 175, 55, 0.5);
+    font-size: 9px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    text-align: right;
+    line-height: 1.6;
+}
+
+input[type='file'] {
+    /* 不能用 display:none，否则键盘用户无法聚焦到 label 里的 input */
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* ============ 摄像头预览 ============ */
+#webcam-wrapper {
+    position: absolute;
+    bottom: 30px;
+    left: 30px;
+    width: 280px;
+    height: 210px;
+    border: 1px solid rgba(212, 175, 55, 0.5);
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.9);
+    border-radius: 4px;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 50;
+    background: #000;
+    transition: opacity 0.5s ease;
+}
+
+#webcam {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: scaleX(-1); /* 镜像，符合照镜子的直觉 */
+}
+
+/* 状态条：默认只在摄像头预览下方显示一行简短提示 */
+#status-info {
+    position: absolute;
+    bottom: 5px;
+    left: 5px;
+    right: 5px;
+    color: rgba(212, 175, 55, 0.8);
+    font-size: 10px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    background: rgba(0, 0, 0, 0.5);
+    padding: 2px 5px;
+    pointer-events: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ============ 快捷键状态 ============ */
+/* H：隐藏所有 UI，用于截图 / 录屏 */
+.ui-hidden-all #ui-layer,
+.ui-hidden-all #webcam-wrapper {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* D：手势原始数值默认隐藏，调阈值时才打开 */
+#debug-info {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    display: none;
+    color: rgba(212, 175, 55, 0.9);
+    font-size: 10px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    background: rgba(0, 0, 0, 0.6);
+    padding: 2px 5px;
+    pointer-events: none;
+}
+
+.debug-visible #debug-info {
+    display: block;
+}
+
+/* ============ 小屏适配 ============ */
+@media (max-width: 720px) {
+    .controls-wrapper {
+        top: auto;
+        bottom: 20px;
+        right: 20px;
+        left: 20px;
+        align-items: stretch;
+    }
+
+    .btn-group { justify-content: stretch; }
+    .upload-btn { flex: 1; }
+    .hint-text { text-align: center; }
+
+    #webcam-wrapper {
+        width: 140px;
+        height: 105px;
+        bottom: auto;
+        top: 20px;
+        left: 20px;
+    }
+}

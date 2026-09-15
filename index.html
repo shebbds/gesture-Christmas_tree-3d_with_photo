@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grand Luxury Tree · 手势控制 3D 圣诞树</title>
+    <meta name="description" content="用手势和照片点亮的 3D 粒子圣诞树，基于 Three.js 与 MediaPipe。">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap">
+    <link rel="stylesheet" href="css/style.css">
+
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/",
+            "@mediapipe/tasks-vision": "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/+esm"
+        }
+    }
+    </script>
+</head>
+<body>
+
+    <div id="loader">
+        <div class="spinner"></div>
+        <div class="loader-text">Loading Memories</div>
+    </div>
+
+    <div id="canvas-container"></div>
+
+    <div id="ui-layer">
+        <h1>Merry Christmas</h1>
+
+        <div class="controls-wrapper">
+            <div class="btn-group">
+                <label class="upload-btn">
+                    Select Folder
+                    <input type="file" id="folder-input" webkitdirectory directory multiple>
+                </label>
+
+                <label class="upload-btn">
+                    Select Files
+                    <input type="file" id="file-input" multiple accept="image/*">
+                </label>
+            </div>
+            <p class="hint-text">
+                拖拽旋转 · 滚轮缩放<br>
+                H 隐藏界面 · T 聚成树 · S 散开 · D 调试
+            </p>
+        </div>
+    </div>
+
+    <div id="webcam-wrapper">
+        <video id="webcam" autoplay playsinline muted></video>
+        <div id="debug-info">—</div>
+        <div id="status-info">Initializing…</div>
+    </div>
+
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>
