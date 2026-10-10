@@ -4,9 +4,9 @@
 
 **Wave your hand and watch a Christmas tree made of thousands of particles burst into a nebula.**
 
-[**▶ Live Demo**](https://timo8848.github.io/gesture-Christmas_tree-3d_with_photo/) · [中文](README.md)
+[**▶ Live Demo**](https://shebbds.github.io/gesture-Christmas_tree-3d_with_photo/) · [中文](README.md)
 
-[![Live Demo](https://img.shields.io/badge/demo-live-d4af37?style=flat-square)](https://timo8848.github.io/gesture-Christmas_tree-3d_with_photo/)
+[![Live Demo](https://img.shields.io/badge/demo-live-d4af37?style=flat-square)](https://shebbds.github.io/gesture-Christmas_tree-3d_with_photo/)
 [![Three.js](https://img.shields.io/badge/three.js-r160-000000?style=flat-square&logo=three.js&logoColor=white)](https://threejs.org/)
 [![MediaPipe](https://img.shields.io/badge/MediaPipe-hand%20tracking-00897b?style=flat-square)](https://developers.google.com/mediapipe)
 [![License](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)

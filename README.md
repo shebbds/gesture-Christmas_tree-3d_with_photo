@@ -1,12 +1,12 @@
 <div align="center">
 
-# 🎄 Grand Luxury Tree
+# 🌹 福寿花篮
 
-**挥挥手，让一棵由几千个粒子组成的圣诞树炸裂成星云。**
+**挥挥手，让红玫瑰与祝福花材聚成一只福寿花篮。**
 
-[**▶ 在线体验**](https://timo8848.github.io/gesture-Christmas_tree-3d_with_photo/) · [English](README.en.md)
+[**▶ 在线体验**](https://shebbds.github.io/gesture-Christmas_tree-3d_with_photo/) · [English](README.en.md)
 
-[![Live Demo](https://img.shields.io/badge/demo-live-d4af37?style=flat-square)](https://timo8848.github.io/gesture-Christmas_tree-3d_with_photo/)
+[![Live Demo](https://img.shields.io/badge/demo-live-d4af37?style=flat-square)](https://shebbds.github.io/gesture-Christmas_tree-3d_with_photo/)
 [![Three.js](https://img.shields.io/badge/three.js-r160-000000?style=flat-square&logo=three.js&logoColor=white)](https://threejs.org/)
 [![MediaPipe](https://img.shields.io/badge/MediaPipe-hand%20tracking-00897b?style=flat-square)](https://developers.google.com/mediapipe)
 [![License](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
@@ -17,9 +17,9 @@
 
 ---
 
-哈喽！这是一个为了庆祝圣诞节写的小项目。✨
+这是一个适合生日、寿宴场景的互动 3D 贺卡。✨
 
-原本只是想画一棵普通的 3D 圣诞树，但觉得不够酷，于是加上了 **手势识别** 和 **粒子特效**。现在你可以通过摄像头「隔空」控制这棵树，还能把自己喜欢的照片挂上去。
+玫瑰、康乃馨、心形、寿桃和寿字等祝寿元素组成 3D 花篮，并保留了 **手势识别**、**粒子特效** 与照片上传能力。页面内置离线可用的喜庆音乐，浏览器允许时会自动播放。
 
 纯前端，没有框架，没有构建步骤，**打开网页就能玩**。
 
@@ -27,11 +27,14 @@
 
 这不是那种静态的网页贺卡，而是一棵由 **几千个粒子** 组成的动态树。接入了 Google 的 MediaPipe，所以它能看懂你的手势。
 
-* **粒子特效**：1500 个装饰物 + 2000 粒金尘 + 1000 片雪花，树会呼吸、旋转，还能炸裂成满天星。
+* **粒子特效**：2000 个装饰物 + 2000 粒金尘 + 1000 片雪花，支持呼吸、旋转与炸裂成满天星。
+* **花材层次**：金色寿字居中，周围穿插玫瑰、康乃馨、心形、寿桃与绿叶。
+* **摄像头可重试**：页面会自动尝试启用手势，也可点击“开启摄像头”按钮重新授权或重试。
+* **国乐伴奏**：内置用户提供的《喜洋洋》MP3，循环播放且无需依赖外部音频链接。
 * **隔空控物**：不需要鼠标，对着摄像头挥挥手就能控制它（感觉像奇异博士）。
 * **挂载回忆**：上传照片，它们会变成带金框的拍立得，沿着树身螺旋飘着。
 * **一键出图**：点 `Save Image` 直接导出一张带标题的高清图，发朋友圈刚好。
-* **极简审美**：午夜蓝 + 香槟金，主打一个「高级感」。
+* **寿宴审美**：绛红 + 香槟金，搭配寿字牌、灯笼与祥云纹样。
 
 <img width="2557" height="1291" alt="image" src="https://github.com/user-attachments/assets/d7d31b4c-bf4d-49b2-b922-79813bbddba5" />
 
@@ -45,9 +48,9 @@
 
 | 手势 | 效果 |
 | --- | --- |
-| **握紧拳头 ✊** | 收！粒子聚合成圣诞树 |
-| **张开手掌 🖐️** | 炸裂模式，树散开成星云，左右移动手掌可以转动视角 |
-| **捏合手指 🤏** | 随机抓取一张照片放大到眼前 |
+| **握紧拳头 ✊** | 收！花朵聚合成福寿花篮 |
+| **张开手掌 🖐️** | 花瓣散开成祝福星光，左右移动手掌可以转动视角 |
+| **捏合手指 🤏** | 随机抓取一张照片并锁定停留，握拳退出 |
 
 识别用的是**相对比例**（以手腕到中指指根的长度为基准），所以手离摄像头远一点近一点都能稳定触发。阈值可以在 `js/config.js` 的 `gestures` 里调，按 <kbd>D</kbd> 能实时看到原始数值。
 
@@ -69,7 +72,7 @@
 有两种方式：
 
 **1. 页面上传（最简单）**
-点右上角 `Select Files` 选图片，或者 `Select Folder` 一次性选一整个文件夹。
+点页面上的“添加祝福照片”选图片，或者“选择照片文件夹”一次性选一整个文件夹。
 
 **2. 放进 `images/` 自动加载**
 把照片丢进 `images/`，再建一个 `images/manifest.json` 列出文件名：
@@ -95,6 +98,27 @@ python3 -m http.server 8000   # 或者：npx http-server .
 
 然后访问 `http://localhost:8000`。
 
+## 📱 发布到手机微信
+
+项目已经包含 `.github/workflows/deploy-pages.yml`。将修改后的项目推送到你自己的 GitHub
+仓库，在仓库的 **Settings → Pages → Source** 中选择 **GitHub Actions**。部署完成后会得到
+一个 `https://用户名.github.io/仓库名/` 链接，直接发到微信即可点击访问。
+
+必须使用 HTTPS，微信内置浏览器才允许申请摄像头权限。进入页面后点击“开启摄像头”，
+再允许访问摄像头即可使用手势。微信通常禁止未交互的有声自动播放，首次点击页面或音乐
+按钮后《喜洋洋》会开始播放。
+
+### 把照片嵌入网页
+
+把准备公开展示的图片放入 `images/embedded/`，然后在 `images/manifest.json` 中列出相对路径：
+
+```json
+["embedded/photo-01.jpg", "embedded/photo-02.png"]
+```
+
+这些文件会随网页一起发布，打开微信链接后自动加载，不需要访问者再次上传。不要把私人照片
+放进去，除非你确认它们可以公开访问。
+
 用 VS Code 的话，装个 `Live Server` 插件，右键 `index.html` → "Open with Live Server" 也行。
 
 ### URL 参数
@@ -106,8 +130,8 @@ python3 -m http.server 8000   # 或者：npx http-server .
 
 ## ⚡ 性能 (Performance)
 
-* **装饰物和金尘全部走 `InstancedMesh`**，3500 个粒子只产生个位数 draw call —— 中低端设备也能跑满帧。
-* **按设备自动分档**：触摸屏 / 低核心数会自动降低粒子数和 `pixelRatio`。辉光（Bloom）在所有档位保留，因为它就是这套画面的灵魂。
+* **装饰物和金尘全部走 `InstancedMesh`**，4000 个实例只产生个位数 draw call，另有 1000 片雪花统一批量渲染。
+* **按设备自动分档**：所有设备保留 2000 个装饰物、2000 粒金尘和 1000 片雪花；触摸屏 / 低核心数只降低 `pixelRatio`，不减少视觉元素。辉光（Bloom）在所有档位保留。
 * 每帧的向量和矩阵全部复用，热路径上没有临时对象分配。
 
 ## 🛠️ 用了什么 (Tech)
