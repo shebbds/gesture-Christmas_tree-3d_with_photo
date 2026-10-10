@@ -2,10 +2,119 @@
 body {
     margin: 0;
     overflow: hidden;
-    background: radial-gradient(circle at center, #0f2027 0%, #203a43 50%, #2c5364 100%);
-    background-color: #050d1a;
-    font-family: 'Times New Roman', serif;
+    background: radial-gradient(circle at center, #4a2316 0%, #28120c 48%, #0b0503 100%);
+    background-color: #160905;
+    font-family: "Songti SC", "STSong", "Times New Roman", serif;
 }
+
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+        linear-gradient(30deg, rgba(255, 211, 106, .035) 12%, transparent 12.5%, transparent 87%, rgba(255, 211, 106, .035) 87.5%),
+        linear-gradient(150deg, rgba(255, 211, 106, .035) 12%, transparent 12.5%, transparent 87%, rgba(255, 211, 106, .035) 87.5%);
+    background-size: 80px 140px;
+}
+
+.festive-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+    display: none;
+}
+
+.gold-halo {
+    position: absolute;
+    left: 50%;
+    top: 51%;
+    width: min(68vw, 850px);
+    aspect-ratio: 1;
+    transform: translate(-50%, -50%);
+    border: 1px solid rgba(255, 216, 126, .17);
+    border-radius: 50%;
+    box-shadow: 0 0 90px rgba(255, 186, 54, .12), inset 0 0 90px rgba(255, 186, 54, .08);
+}
+
+.gold-halo::before,
+.gold-halo::after {
+    content: '';
+    position: absolute;
+    inset: 7%;
+    border: 1px dashed rgba(255, 216, 126, .15);
+    border-radius: 50%;
+}
+
+.gold-halo::after { inset: 17%; }
+
+.lantern {
+    position: absolute;
+    top: -14px;
+    width: 112px;
+    height: 136px;
+    border-radius: 46% 46% 42% 42%;
+    background: linear-gradient(90deg, #8b0017, #ef2946 48%, #8b0017);
+    border: 3px solid #e4ac42;
+    box-shadow: 0 0 38px rgba(255, 68, 74, .55), inset 0 0 22px rgba(255, 216, 113, .22);
+    color: #ffd56e;
+    display: grid;
+    place-items: center;
+    font-size: 46px;
+    font-weight: 700;
+}
+
+.lantern::before {
+    content: '';
+    position: absolute;
+    top: -45px;
+    width: 2px;
+    height: 45px;
+    background: #e4ac42;
+}
+
+.lantern::after {
+    content: '';
+    position: absolute;
+    bottom: -54px;
+    width: 4px;
+    height: 50px;
+    background: linear-gradient(#e4ac42 0 44%, transparent 44% 55%, #e4ac42 55%);
+    box-shadow: -9px 10px #e4ac42, 9px 10px #e4ac42;
+}
+
+.lantern i,
+.lantern i::before,
+.lantern i::after {
+    position: absolute;
+    inset: 10px 28px;
+    content: '';
+    border-left: 1px solid rgba(255, 221, 137, .45);
+    border-right: 1px solid rgba(255, 221, 137, .45);
+    border-radius: 50%;
+}
+
+.lantern i::before { inset: 0 -20px; }
+.lantern i::after { inset: 0 18px; }
+.lantern span { position: relative; z-index: 1; }
+.lantern-left { left: 6vw; transform: rotate(-4deg); }
+.lantern-right { right: 6vw; transform: rotate(4deg); }
+
+.cloud {
+    position: absolute;
+    bottom: 5vh;
+    width: 28vw;
+    height: 110px;
+    opacity: .18;
+    border-top: 3px solid #ffd36a;
+    border-radius: 50%;
+    filter: drop-shadow(60px -35px 0 #ffd36a) drop-shadow(120px 0 0 #ffd36a);
+}
+
+.cloud-left { left: -5vw; }
+.cloud-right { right: 3vw; transform: scaleX(-1); }
 
 #canvas-container {
     position: absolute;
@@ -17,7 +126,7 @@ body {
 #loader {
     position: absolute;
     inset: 0;
-    background: #050d1a;
+    background: radial-gradient(circle, #9e0b27, #38000b);
     z-index: 100;
     display: flex;
     flex-direction: column;
@@ -40,7 +149,7 @@ body {
 }
 
 .loader-text {
-    color: #d4af37;
+    color: #ffd36a;
     font-size: 14px;
     letter-spacing: 4px;
     margin-top: 20px;
@@ -62,23 +171,38 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding-top: 40px;
+    padding-top: 28px;
     box-sizing: border-box;
     transition: opacity 0.5s ease;
 }
 
+.hero-copy {
+    text-align: center;
+    filter: drop-shadow(0 8px 26px rgba(70, 0, 8, .85));
+}
+
+.eyebrow,
+.subtitle {
+    color: rgba(255, 225, 147, .78);
+    margin: 0;
+    letter-spacing: .55em;
+    font-size: clamp(10px, 1.2vw, 14px);
+}
+
+.subtitle { margin-top: 7px; letter-spacing: .35em; }
+
 h1 {
     color: #fceea7;
-    font-size: clamp(28px, 6vw, 56px);
+    font-size: clamp(34px, 5.5vw, 64px);
     margin: 0;
     font-weight: 400;
-    letter-spacing: 6px;
+    letter-spacing: .22em;
     text-shadow: 0 0 50px rgba(252, 238, 167, 0.6);
     background: linear-gradient(to bottom, #fff, #eebb66);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
-    font-family: 'Cinzel', 'Times New Roman', serif;
+    font-family: "Kaiti SC", "STKaiti", "Songti SC", serif;
     opacity: 0.9;
     text-align: center;
 }
@@ -86,7 +210,7 @@ h1 {
 /* ============ 控制按钮 ============ */
 .controls-wrapper {
     position: absolute;
-    top: 30px;
+    top: 28px;
     right: 30px;
     pointer-events: auto;
     display: flex;
@@ -100,12 +224,14 @@ h1 {
 .btn-group {
     display: flex;
     gap: 10px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
 }
 
 .upload-btn {
-    background: rgba(20, 20, 20, 0.6);
-    border: 1px solid rgba(212, 175, 55, 0.4);
-    color: #d4af37;
+    background: rgba(83, 0, 15, 0.66);
+    border: 1px solid rgba(255, 211, 106, 0.52);
+    color: #ffda79;
     padding: 10px 20px;
     cursor: pointer;
     text-transform: uppercase;
@@ -116,15 +242,18 @@ h1 {
     align-items: center;
     justify-content: center;
     backdrop-filter: blur(5px);
-    min-width: 120px;
+    min-width: 112px;
+    border-radius: 999px;
 }
 
 .upload-btn:hover,
 .upload-btn:focus-within {
-    background: #d4af37;
-    color: #000;
+    background: #ffd36a;
+    color: #650015;
     box-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
 }
+
+.music-paused { border-style: dashed; }
 
 .hint-text {
     color: rgba(212, 175, 55, 0.5);
@@ -209,6 +338,14 @@ input[type='file'] {
  */
 .ui-hidden-all .controls-wrapper {
     pointer-events: none;
+}
+
+/* 捏合抓取照片后让照片占据整个视野，界面与摄像头预览暂时淡出。 */
+.focus-photo-active #ui-layer,
+.focus-photo-active #webcam-wrapper {
+    opacity: 0;
+    pointer-events: none;
+    visibility: hidden;
 }
 
 /* D：手势原始数值默认隐藏，调阈值时才打开 */
