@@ -2,7 +2,7 @@
 #
 # 启用方法：仓库 Settings → Pages → Build and deployment → Source 选 "GitHub Actions"。
 # 之后每次推到 main 都会自动部署到
-# https://timo8848.github.io/gesture-Christmas_tree-3d_with_photo/
+# https://shebbds.github.io/gesture-Christmas_tree-3d_with_photo/
 name: Deploy to GitHub Pages
 
 on:
