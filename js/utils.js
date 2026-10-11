@@ -66,35 +66,18 @@ export function createPlaceholderTexture(index) {
     canvas.height = size;
     const ctx = canvas.getContext('2d');
 
-    const hue = (index * 47) % 360;
     const gradient = ctx.createLinearGradient(0, 0, size, size);
-    gradient.addColorStop(0, `hsl(${hue}, 45%, 24%)`);
-    gradient.addColorStop(1, `hsl(${(hue + 40) % 360}, 50%, 12%)`);
+    gradient.addColorStop(0, index % 2 ? '#b90d2e' : '#75101f');
+    gradient.addColorStop(1, '#3d000c');
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, size, size);
 
-    // 一颗简单的六角雪花
-    ctx.strokeStyle = 'rgba(255, 228, 160, 0.75)';
-    ctx.lineWidth = 6;
-    ctx.lineCap = 'round';
-    ctx.translate(size / 2, size / 2);
-    for (let i = 0; i < 6; i++) {
-        ctx.rotate(Math.PI / 3);
-        ctx.beginPath();
-        ctx.moveTo(0, 0);
-        ctx.lineTo(0, -70);
-        ctx.moveTo(0, -45);
-        ctx.lineTo(-20, -62);
-        ctx.moveTo(0, -45);
-        ctx.lineTo(20, -62);
-        ctx.stroke();
-    }
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-
-    ctx.fillStyle = 'rgba(255, 228, 160, 0.85)';
-    ctx.font = '500 20px ui-monospace, Menlo, monospace';
+    ctx.fillStyle = '#ffdc7c';
+    ctx.font = 'bold 116px "Songti SC", "STSong", serif';
     ctx.textAlign = 'center';
-    ctx.fillText('YOUR PHOTO HERE', size / 2, size - 28);
+    ctx.fillText(index % 2 ? '福' : '寿', size / 2, 148);
+    ctx.font = 'bold 22px "Songti SC", "STSong", serif';
+    ctx.fillText('生日快乐', size / 2, size - 34);
 
     const texture = new THREE.CanvasTexture(canvas);
     texture.colorSpace = THREE.SRGBColorSpace;

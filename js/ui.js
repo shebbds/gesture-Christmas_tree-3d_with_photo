@@ -6,7 +6,7 @@ import { handleImageUpload } from './photos.js';
 import { saveImage } from './capture.js';
 import { isDemoMode } from './demo.js';
 
-const SEEN_KEY = 'grand-luxury-tree:onboarded';
+const SEEN_KEY = 'birthday-flower-basket:onboarded';
 
 let statusEl = null;
 let debugEl = null;
@@ -57,14 +57,14 @@ async function onSave(e) {
     const btn = e.currentTarget;
     const label = btn.textContent;
     btn.disabled = true;
-    btn.textContent = 'Saving…';
+    btn.textContent = '保存中…';
 
     try {
         const ok = await saveImage();
-        btn.textContent = ok ? 'Saved' : 'Failed';
+        btn.textContent = ok ? '已保存' : '保存失败';
     } catch (err) {
         console.error('[tree] 保存图片失败', err);
-        btn.textContent = 'Failed';
+        btn.textContent = '保存失败';
     }
 
     setTimeout(() => {
@@ -101,10 +101,12 @@ function onKeyDown(e) {
         case 't':
             STATE.mode = 'TREE';
             STATE.focusTarget = null;
+            document.body.classList.remove('focus-photo-active');
             break;
         case 's':
             STATE.mode = 'SCATTER';
             STATE.focusTarget = null;
+            document.body.classList.remove('focus-photo-active');
             break;
     }
 }

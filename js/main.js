@@ -11,11 +11,14 @@ import { initGestures } from './gestures.js';
 import { initUI, hideLoader, setStatus } from './ui.js';
 import { initDemo, isDemoMode, updateDemo } from './demo.js';
 import { particleSystem } from './particle.js';
+import { initMusic } from './music.js';
+
+let gestureStarting = false;
 
 function boot() {
     const tier = applyQuality();
     console.info(
-        `[tree] 画质档位：${tier}（装饰物 ${CONFIG.particles.count} / 金尘 ${CONFIG.particles.dustCount} / 雪花 ${CONFIG.particles.snowCount}）` +
+        `[flower-basket] 画质档位：${tier}（装饰物 ${CONFIG.particles.count} / 金尘 ${CONFIG.particles.dustCount} / 雪花 ${CONFIG.particles.snowCount}）` +
         ' · 可用 ?quality=high|medium|low 强制指定'
     );
 
@@ -28,6 +31,7 @@ function boot() {
     createSnow();
     initPhotos();
     initUI();
+    initMusic();
 
     // 关键：先让画面动起来再做别的。
     // 旧版本要 await 完 MediaPipe 才调 animate()，模型下载失败就是一片永久黑屏。
@@ -37,12 +41,33 @@ function boot() {
     loadInitialPhotos();
 
     if (isDemoMode()) return;
+    document.getElementById('camera-btn')?.addEventListener('click', startGestures);
+    if (new URLSearchParams(location.search).get('camera') === 'off') {
+        setStatus('摄像头未开启 · 点击按钮启用手势交互');
+        return;
+    }
 
-    setStatus('正在加载手势模型…');
-    initGestures().then((ok) => {
-        if (ok) return;
-        console.info('[tree] 手势不可用，可用鼠标拖拽旋转、滚轮缩放，T / S 切换形态');
-    });
+    startGestures();
+}
+
+async function startGestures() {
+    if (gestureStarting) return;
+    gestureStarting = true;
+    const button = document.getElementById('camera-btn');
+    if (button) {
+        button.disabled = true;
+        button.textContent = '📷 正在开启…';
+    }
+    setStatus('正在请求摄像头权限…');
+    const ok = await initGestures();
+    gestureStarting = false;
+    if (button) {
+        button.disabled = ok;
+        button.textContent = ok ? '📷 摄像头已开启' : '📷 重试摄像头';
+    }
+    if (!ok) {
+        console.info('[flower-basket] 手势不可用，可点击摄像头按钮重试，鼠标与键盘仍可操作');
+    }
 }
 
 /** 随机挑一张照片作为 FOCUS 目标。 */
@@ -80,10 +105,14 @@ function updateRotation(dt) {
         STATE.rotation.y += (targetY - STATE.rotation.y) * 3.0 * dt;
         STATE.rotation.x += (targetX - STATE.rotation.x) * 3.0 * dt;
     } else if (!STATE.userControllingCamera) {
-        const spin = STATE.mode === 'TREE' ? 0.3 : 0.1;
-        STATE.rotation.y += spin * dt;
         if (STATE.mode === 'TREE') {
+            // 花篮只做很轻的左右摆动，避免中央寿桃随整篮持续自转后跑到侧后方。
+            // 花朵本身的旋转、呼吸和散开动画仍由粒子系统负责。
+            const targetY = Math.sin(clock.elapsedTime * 0.22) * 0.09;
+            STATE.rotation.y += (targetY - STATE.rotation.y) * 1.5 * dt;
             STATE.rotation.x += (0 - STATE.rotation.x) * 2.0 * dt;
+        } else {
+            STATE.rotation.y += 0.08 * dt;
         }
     }
 

@@ -53,7 +53,7 @@ export async function loadInitialPhotos() {
 
     // 一张都没加载成功（离线、或者外链图床挂了）就用本地生成的占位图兜底
     if (photoCount() === 0) {
-        console.info('[tree] 未加载到任何照片，已挂上占位图。把照片放进 ./images/ 并列进 manifest.json 即可替换。');
+        console.info('[flower-basket] 未加载到照片，可点击“添加祝福照片”上传。');
         for (let i = 0; i < CONFIG.photos.placeholderCount; i++) {
             addPhotoToScene(createPlaceholderTexture(i));
         }
@@ -143,19 +143,15 @@ export function updatePhotoLayout() {
     const photos = particleSystem.filter((p) => p.type === 'PHOTO');
     if (!photos.length) return;
 
-    const fullH = CONFIG.particles.treeHeight;
-    const h = fullH * 0.9;
-    const stepY = h / photos.length;
-
     photos.forEach((p, i) => {
-        const y = -h / 2 + stepY * i + stepY / 2;
-        const normalizedH = (y + fullH / 2) / fullH;
-
-        // 比树身半径再外扩 3，让照片浮在装饰物外面
-        const r = Math.max(CONFIG.particles.treeRadius * (1.0 - normalizedH), 1.0) + 3.0;
-        const angle = normalizedH * Math.PI * 2 * CONFIG.photos.loops + i * GOLDEN_ANGLE;
-
-        p.posTree.set(Math.cos(angle) * r, y, Math.sin(angle) * r);
+        // 沿花冠椭圆外缘错落悬挂，避免再出现圣诞树螺旋轮廓。
+        const angle = i * GOLDEN_ANGLE - Math.PI / 2;
+        const ring = 1 + Math.floor(i / 12) * 0.55;
+        p.posTree.set(
+            Math.cos(angle) * (9.4 + ring),
+            1.2 + Math.sin(angle) * (6.0 + ring * 0.35),
+            4.3 + (i % 3) * 0.28
+        );
     });
 }
 

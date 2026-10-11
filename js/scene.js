@@ -27,11 +27,11 @@ export function initScene() {
     const container = document.getElementById('canvas-container');
 
     scene = new THREE.Scene();
-    scene.background = new THREE.Color(CONFIG.colors.bg);
+    scene.background = createFestiveBackground();
     scene.fog = new THREE.FogExp2(CONFIG.colors.fog, 0.015);
 
     camera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.set(0, 2, CONFIG.camera.z);
+    camera.position.set(0, 0, CONFIG.camera.z);
 
     renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
     renderer.setSize(window.innerWidth, window.innerHeight);
@@ -49,6 +49,22 @@ export function initScene() {
     setupPostProcessing();
 
     window.addEventListener('resize', onResize);
+}
+
+function createFestiveBackground() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 1024;
+    canvas.height = 1024;
+    const ctx = canvas.getContext('2d');
+    const gradient = ctx.createRadialGradient(512, 440, 50, 512, 500, 740);
+    gradient.addColorStop(0, '#4a2316');
+    gradient.addColorStop(0.48, '#28120c');
+    gradient.addColorStop(1, '#0b0503');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, 1024, 1024);
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.colorSpace = THREE.SRGBColorSpace;
+    return texture;
 }
 
 function setupEnvironment() {
@@ -70,10 +86,10 @@ function setupLights() {
     spotGold.penumbra = 0.5;
     scene.add(spotGold);
 
-    // 蓝色背光，营造月光感
-    const spotBlue = new THREE.SpotLight(0x6688ff, 800);
-    spotBlue.position.set(-30, 20, -30);
-    scene.add(spotBlue);
+    // 暖红背光让红花与金饰从深色背景中浮出来。
+    const spotRed = new THREE.SpotLight(0xff365c, 900);
+    spotRed.position.set(-30, 20, -30);
+    scene.add(spotRed);
 
     const fill = new THREE.DirectionalLight(0xffeebb, 0.8);
     fill.position.set(0, 0, 50);
@@ -91,7 +107,7 @@ function setupControls() {
     controls.enablePan = false;
     controls.minDistance = CONFIG.camera.minDistance;
     controls.maxDistance = CONFIG.camera.maxDistance;
-    controls.target.set(0, 2, 0);
+    controls.target.set(0, -1, 0);
 
     // 用户拖拽时暂停树的自转，松手后恢复，避免两种旋转叠加导致晕眩。
     controls.addEventListener('start', () => { STATE.userControllingCamera = true; });

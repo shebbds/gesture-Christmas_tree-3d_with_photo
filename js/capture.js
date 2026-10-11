@@ -6,8 +6,8 @@
  */
 import { composer, renderer } from './scene.js';
 
-const TITLE = 'Merry Christmas';
-const WATERMARK = 'github.com/Timo8848/gesture-Christmas_tree-3d_with_photo';
+const TITLE = '寿桃献瑞 · 福寿安康';
+const WATERMARK = '岁岁常欢愉 · 年年皆胜意';
 
 /**
  * @returns {Promise<boolean>} 是否成功触发保存
@@ -31,7 +31,7 @@ export async function saveImage() {
 
     const url = URL.createObjectURL(blob);
     const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
-    const filename = `christmas-tree-${stamp}.png`;
+    const filename = `birthday-flower-basket-${stamp}.png`;
 
     // 不能用 `'download' in link` 做特性检测 —— 这个属性在所有浏览器上都存在，
     // 包括那些会直接忽略它的 iOS Safari，所以分支永远走不到 else。
@@ -67,7 +67,7 @@ function drawTitle(ctx, width, height) {
     ctx.shadowBlur = 40 * scale;
 
     const size = Math.round(52 * scale);
-    ctx.font = `400 ${size}px Cinzel, "Times New Roman", serif`;
+    ctx.font = `700 ${size}px "Songti SC", "STSong", serif`;
     ctx.letterSpacing = `${Math.round(6 * scale)}px`;
 
     const gradient = ctx.createLinearGradient(0, 60 * scale, 0, 60 * scale + size);

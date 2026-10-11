@@ -1,10 +1,9 @@
 /**
- * 飘雪。挂在 scene 而非 mainGroup 上，所以树旋转时雪不会跟着转。
+ * 红金彩屑。挂在 scene 而非 mainGroup 上，所以花篮旋转时彩屑不会跟着转。
  */
 import * as THREE from 'three';
 import { CONFIG } from './config.js';
 import { scene, clock } from './scene.js';
-import { createSnowflakeTexture } from './utils.js';
 
 const AREA = { x: 100, y: 60, z: 60 };
 const RESET_BELOW = -30;
@@ -22,6 +21,7 @@ let swayAmounts = null;
 export function createSnow() {
     const count = CONFIG.particles.snowCount;
     const positions = new Float32Array(count * 3);
+    const colors = new Float32Array(count * 3);
     fallSpeeds = new Float32Array(count);
     swayAmounts = new Float32Array(count);
 
@@ -32,17 +32,19 @@ export function createSnow() {
 
         fallSpeeds[i] = 6 + Math.random() * 12;   // 单位/秒
         swayAmounts[i] = 0.1 + Math.random() * 0.5;
+        const color = new THREE.Color(i % 3 === 0 ? 0xff234d : i % 3 === 1 ? 0xffd36a : 0xfff0c2);
+        colors.set([color.r, color.g, color.b], i * 3);
     }
 
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
 
     const material = new THREE.PointsMaterial({
-        color: 0xffffff,
-        size: 0.4,
-        map: createSnowflakeTexture(),
+        size: 0.22,
+        vertexColors: true,
         transparent: true,
-        opacity: 0.8,
+        opacity: 0.85,
         blending: THREE.AdditiveBlending,
         depthWrite: false,
     });

@@ -14,10 +14,8 @@ import { damp } from './utils.js';
  */
 const _tmpScale = new THREE.Vector3();
 const _tmpTarget = new THREE.Vector3();
+const _tmpForward = new THREE.Vector3();
 const _invMatrix = new THREE.Matrix4();
-
-/** FOCUS 模式下被选中照片飞到的位置（世界坐标）。 */
-const FOCUS_WORLD_POS = new THREE.Vector3(0, 2, 35);
 
 export const particleSystem = [];
 
@@ -67,15 +65,31 @@ export class Particle {
             return;
         }
 
-        const h = CONFIG.particles.treeHeight;
-        let t = Math.pow(Math.random(), 0.8);
-        const y = t * h - h / 2;
+        // 花篮是横向舒展的椭圆花冠，而不是圣诞树的锥体。
+        const isLeaf = this.type === 'LEAF';
+        const isBerry = this.type === 'BERRY';
+        const y = -4.4 + Math.pow(Math.random(), 0.82) * 11.2;
+        const ny = (y - 0.6) / 6.4;
+        const silhouette = Math.sqrt(Math.max(0.18, 1 - ny * ny));
+        const edgeBoost = isLeaf ? 1.16 : 1;
+        const radiusX = (2.1 + CONFIG.particles.treeRadius * 1.16 * silhouette) * edgeBoost;
+        const angle = Math.random() * Math.PI * 2;
+        const fill = Math.sqrt(Math.random());
+        let x = Math.cos(angle) * radiusX * fill;
+        const z = Math.sin(angle) * (3.2 + silhouette * 1.7) * fill - 0.4;
 
-        const rMax = Math.max(CONFIG.particles.treeRadius * (1.0 - t), 0.5);
-        const angle = t * 50 * Math.PI + Math.random() * Math.PI;
-        const r = rMax * (0.8 + Math.random() * 0.4);
+        // 给中央大寿桃留出清晰展示区；花材、心形和叶片向两侧环抱。
+        const keepsCenter = this.type === 'PEACH' || this.type === 'SHOU';
+        if (!keepsCenter && y > -0.8 && y < 6.8 && Math.abs(x) < 3.7) {
+            const side = x === 0 ? (Math.random() < 0.5 ? -1 : 1) : Math.sign(x);
+            x = side * (3.7 + Math.random() * 1.5);
+        }
 
-        this.posTree.set(Math.cos(angle) * r, y, Math.sin(angle) * r);
+        this.posTree.set(x, y, z);
+        if (isBerry) {
+            this.posTree.x *= 0.9;
+            this.posTree.z += 0.8;
+        }
     }
 
     /** 在一个球壳里均匀取点，作为散开时的位置。 */
@@ -95,9 +109,12 @@ export class Particle {
 
         let target;
         if (isFocused) {
-            // 把世界坐标换算回 mainGroup 的局部坐标，这样树怎么转照片都停在镜头前
+            // 始终放在当前镜头正前方 6 个单位。不能写死世界坐标：相机距离调整后，
+            // 写死的位置可能跑到镜头后面，表现为“捏合了但没有照片”。
+            camera.getWorldDirection(_tmpForward);
+            _tmpTarget.copy(camera.position).addScaledVector(_tmpForward, 6);
             _invMatrix.copy(mainGroup.matrixWorld).invert();
-            target = _tmpTarget.copy(FOCUS_WORLD_POS).applyMatrix4(_invMatrix);
+            target = _tmpTarget.applyMatrix4(_invMatrix);
         } else if (mode === 'SCATTER' || mode === 'FOCUS') {
             target = this.posScatter;
         } else {
@@ -139,7 +156,7 @@ export class Particle {
             return this.baseScale * (0.8 + 0.4 * Math.sin(clock.elapsedTime * 4 + this.mesh.id));
         }
         if (mode === 'SCATTER' && this.type === 'PHOTO') return this.baseScale * 2.5;
-        if (mode === 'FOCUS') return isFocused ? 4.5 : this.baseScale * 0.8;
+        if (mode === 'FOCUS') return isFocused ? 6.6 : this.baseScale * 0.8;
         return this.baseScale;
     }
 }

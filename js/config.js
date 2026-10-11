@@ -5,27 +5,30 @@
 
 export const CONFIG = {
     colors: {
-        bg: 0x050d1a,            // 深邃午夜蓝
-        fog: 0x050d1a,
-        champagneGold: 0xffd966,
-        deepGreen: 0x03180a,
-        accentRed: 0x990000,
+        bg: 0x320006,            // 寿宴绛红
+        fog: 0x320006,
+        champagneGold: 0xffd36a,
+        deepGreen: 0x123b20,
+        accentRed: 0xc90024,
+        roseRed: 0xb40027,
+        carnationRed: 0xe2283f,
+        blossomPink: 0xffb8c5,
+        ivory: 0xfff0dc,
     },
 
     /**
-     * 粒子数量按设备能力分档。
-     * 全部装饰物 + 金尘都走 InstancedMesh，所以数量再大也只有个位数 draw call，
-     * 真正的瓶颈是每帧要在 JS 里合成多少个矩阵 —— 手机上降档就是降这个。
+     * 装饰物、金尘和雪花数量固定；画质档只调整像素密度，确保每台设备都能
+     * 看到完整的 2000 + 2000 + 1000 粒子效果。
      */
     quality: {
-        high:   { count: 1500, dustCount: 2000, snowCount: 1000, pixelRatio: 2 },
-        medium: { count: 1000, dustCount: 1200, snowCount: 600,  pixelRatio: 1.5 },
-        low:    { count: 700,  dustCount: 700,  snowCount: 400,  pixelRatio: 1 },
+        high:   { count: 2000, dustCount: 2000, snowCount: 1000, pixelRatio: 2 },
+        medium: { count: 2000, dustCount: 2000, snowCount: 1000, pixelRatio: 1.5 },
+        low:    { count: 2000, dustCount: 2000, snowCount: 1000, pixelRatio: 1 },
     },
 
     particles: {
-        // count / dustCount / snowCount 由 applyQuality() 在启动时按设备填入
-        treeHeight: 24,
+        // count / dustCount / snowCount 由 applyQuality() 在启动时填入
+        treeHeight: 19,
         treeRadius: 8,
     },
 
@@ -34,7 +37,7 @@ export const CONFIG = {
     },
 
     camera: {
-        z: 50,
+        z: 34,
         minDistance: 15,
         maxDistance: 120,
     },
@@ -42,7 +45,7 @@ export const CONFIG = {
     photos: {
         maxCount: 120,           // 上限，防止选中一个上千张的文件夹后显存爆掉
         loops: 3,                // 照片沿树身螺旋绕几圈
-        placeholderCount: 5,     // 一张照片都加载不到时挂几张占位图
+        placeholderCount: 0,     // 未上传照片时保持花篮主体干净
     },
 
     preload: {
@@ -53,11 +56,7 @@ export const CONFIG = {
         manifest: './images/manifest.json',
 
         // 没有任何本地照片时的兜底示例图（来自 Unsplash）
-        fallbackImages: [
-            'https://images.unsplash.com/photo-1543589077-47d81606c1bf?q=80&w=600',
-            'https://images.unsplash.com/photo-1576919228236-a097c32a5cd4?q=80&w=600',
-            'https://images.unsplash.com/photo-1512389142860-9c449e58a543?q=80&w=600',
-        ],
+        fallbackImages: [],
     },
 
     gestures: {
@@ -80,9 +79,8 @@ export const STATE = {
 /**
  * 按设备能力挑一档画质，并把结果写回 CONFIG.particles。
  *
- * 判断依据有意保守：手机上跑满 1500 个装饰物 + 2000 粒金尘 + Bloom 会直接掉到
- * 十几帧，宁可少一点也要保证顺滑 —— 卡顿比粒子少更劝退。
- * 想强制某一档可以加 URL 参数：?quality=high|medium|low
+ * 设备分档只影响像素密度；想强制某一档可以加 URL 参数：
+ * ?quality=high|medium|low
  */
 export function applyQuality() {
     const forced = new URLSearchParams(location.search).get('quality');

@@ -15,8 +15,8 @@ const MODEL_PATH =
     'https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task';
 
 const MODE_LABEL = {
-    TREE: '握拳 · 聚成树',
-    SCATTER: '张开 · 星云',
+    TREE: '握拳 · 聚成花篮',
+    SCATTER: '张开 · 祝福星光',
     FOCUS: '捏合 · 看照片',
 };
 
@@ -27,10 +27,41 @@ let handLandmarker = null;
 let video = null;
 let lastVideoTime = -1;
 let consecutiveErrors = 0;
+let predictionStarted = false;
+let focusLockedUntil = 0;
 
 /** @returns {Promise<boolean>} 手势是否成功启用 */
 export async function initGestures() {
     video = document.getElementById('webcam');
+
+    if (!navigator.mediaDevices?.getUserMedia) {
+        disableWebcamUI('此浏览器不支持摄像头 · 鼠标仍可操作');
+        return false;
+    }
+
+    // 先申请并显示摄像头，再加载较大的识别模型。这样用户点击后会立即看到
+    // 权限请求和预览，不会误以为按钮失效。
+    if (!video.srcObject) {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: { width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 30 } },
+            });
+            video.srcObject = stream;
+            document.getElementById('webcam-wrapper')?.style.removeProperty('display');
+            await video.play().catch(() => {});
+            setStatus('摄像头已开启 · 正在加载手势识别…');
+        } catch (err) {
+            console.warn('[flower-basket] 摄像头权限不可用', err);
+            disableWebcamUI('摄像头未授权 · 点击按钮可重试');
+            return false;
+        }
+    }
+
+    if (handLandmarker) {
+        startPrediction();
+        setStatus('摄像头已开启，伸手试试');
+        return true;
+    }
 
     try {
         const vision = await FilesetResolver.forVisionTasks(WASM_PATH);
@@ -40,29 +71,21 @@ export async function initGestures() {
             numHands: 1,
         });
     } catch (err) {
-        console.warn('[tree] 手势模型加载失败，仅鼠标模式可用', err);
-        disableWebcamUI('手势模型加载失败 · 鼠标仍可操作');
+        console.warn('[flower-basket] 手势模型加载失败，仅鼠标模式可用', err);
+        setStatus('摄像头已开启 · 手势模型加载失败，可点击重试');
         return false;
     }
 
-    if (!navigator.mediaDevices?.getUserMedia) {
-        disableWebcamUI('此浏览器不支持摄像头 · 鼠标仍可操作');
-        return false;
-    }
+    startPrediction();
+    setStatus('摄像头已开启，伸手试试');
+    return true;
+}
 
-    try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-            video: { width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 30 } },
-        });
-        video.srcObject = stream;
-        video.addEventListener('loadeddata', predictWebcam, { once: true });
-        setStatus('摄像头已开启，伸手试试');
-        return true;
-    } catch (err) {
-        console.warn('[tree] 摄像头不可用', err);
-        disableWebcamUI('摄像头不可用 · 鼠标仍可操作');
-        return false;
-    }
+function startPrediction() {
+    if (predictionStarted) return;
+    predictionStarted = true;
+    if (video.readyState >= 2) predictWebcam();
+    else video.addEventListener('loadeddata', predictWebcam, { once: true });
 }
 
 function disableWebcamUI(message) {
@@ -139,18 +162,42 @@ function processGestures(result) {
 
     const g = CONFIG.gestures;
 
-    // 先判握拳：否则大拇指贴近食指时会被误判成「捏合」
+    // 照片一旦被捏合抓取就保持在镜头前。张开手掌不会立即把它丢掉；
+    // 用户需要握拳明确退出，或使用 T / S 快捷键切换。
+    if (STATE.mode === 'FOCUS') {
+        const remaining = focusLockedUntil - performance.now();
+        if (remaining > 0) {
+            setStatus(`照片全屏展示 · ${Math.ceil(remaining / 1000)} 秒后可退出`);
+        } else if (extensionRatio < g.fistExtensionRatio) {
+            STATE.mode = 'TREE';
+            STATE.focusTarget = null;
+            document.body.classList.remove('focus-photo-active');
+            setStatus(MODE_LABEL.TREE);
+        } else {
+            setStatus('照片已锁定 · 握拳退出');
+        }
+        return;
+    }
+
+    // 双指捏合要优先于握拳，但同时要求其余手指不能完全收拢，避免把拳头误判成捏合。
+    const isPinching = pinchRatio < g.pinchRatio && extensionRatio > g.fistExtensionRatio * 0.92;
+    if (isPinching) {
+        const photos = particleSystem.filter((p) => p.type === 'PHOTO');
+        if (photos.length) {
+            STATE.mode = 'FOCUS';
+            STATE.focusTarget = photos[Math.floor(Math.random() * photos.length)].mesh;
+            focusLockedUntil = performance.now() + 1000;
+            document.body.classList.add('focus-photo-active');
+            setStatus('照片全屏展示 · 1 秒后可操作');
+            return;
+        }
+        setStatus('请先添加照片，再使用双指捏合抓取');
+        return;
+    }
+
     if (extensionRatio < g.fistExtensionRatio) {
         STATE.mode = 'TREE';
         STATE.focusTarget = null;
-    } else if (pinchRatio < g.pinchRatio) {
-        if (STATE.mode !== 'FOCUS') {
-            STATE.mode = 'FOCUS';
-            const photos = particleSystem.filter((p) => p.type === 'PHOTO');
-            STATE.focusTarget = photos.length
-                ? photos[Math.floor(Math.random() * photos.length)].mesh
-                : null;
-        }
     } else if (extensionRatio > g.openExtensionRatio) {
         STATE.mode = 'SCATTER';
         STATE.focusTarget = null;
